@@ -1,0 +1,235 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import './App.css';
+import MapView from './MapView';
+
+function App() {
+  const [formData, setFormData] = useState({
+    source: '',
+    destination: '',
+    departureTime: new Date().toISOString().slice(0, 16)
+  });
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [results, setResults] = useState(null);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.source.trim() || !formData.destination.trim()) {
+      setError('Please enter both source and destination cities.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setResults(null);
+
+    try {
+      const response = await axios.post('/api/check-route', formData);
+      setResults(response.data);
+    } catch (error) {
+      console.error('Error:', error);
+      if (error.response?.data?.error) {
+        setError(error.response.data.error);
+      } else {
+        setError('Failed to fetch route information. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDuration = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
+  const formatDistance = (meters) => {
+    const km = meters / 1000;
+    return `${km.toFixed(1)} km`;
+  };
+
+  const getSeverityClass = (severity) => {
+    switch (severity) {
+      case 'high':
+        return 'rain';
+      case 'low':
+        return 'clear';
+      default:
+        return 'unknown';
+    }
+  };
+
+  return (
+    <div className="App">
+      <div className="container">
+        <header className="app-header">
+          <h1 className="app-title">🌧️ Rain Route Planner</h1>
+          <p className="app-subtitle">Plan your journey across India with real-time weather alerts</p>
+        </header>
+
+        <form onSubmit={handleSubmit} className="form-container">
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="source">Source City</label>
+              <input
+                type="text"
+                id="source"
+                name="source"
+                value={formData.source}
+                onChange={handleInputChange}
+                placeholder="e.g., Mumbai, Delhi, Bangalore"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="destination">Destination City</label>
+              <input
+                type="text"
+                id="destination"
+                name="destination"
+                value={formData.destination}
+                onChange={handleInputChange}
+                placeholder="e.g., Chennai, Kolkata, Hyderabad"
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="departureTime">Departure Time</label>
+              <input
+                type="datetime-local"
+                id="departureTime"
+                name="departureTime"
+                value={formData.departureTime}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <button 
+                type="submit" 
+                className="check-button"
+                disabled={loading}
+              >
+                {loading ? 'Checking Route...' : 'Check Weather & Route'}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        {error && (
+          <div className="error-message">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+
+        {loading && (
+          <div className="loading">
+            <div className="loading-spinner"></div>
+            <p>Fetching route information and weather data...</p>
+          </div>
+        )}
+
+        {results && (
+          <div className="results-container">
+            <div className="results-header">
+              <h2 className="results-title">Route & Weather Alerts</h2>
+            </div>
+
+            {/* Map section */}
+            <div style={{ marginBottom: 24 }}>
+              <MapView routePath={results.route.routePath || []} alerts={results.weatherAlerts || []} />
+            </div>
+
+            <div className="route-summary">
+              <h3>Route Summary</h3>
+              <div className="summary-grid">
+                <div className="summary-item">
+                  <div className="summary-label">Total Distance</div>
+                  <div className="summary-value">{formatDistance(results.route.totalDistance)}</div>
+                </div>
+                <div className="summary-item">
+                  <div className="summary-label">Total Duration</div>
+                  <div className="summary-value">{formatDuration(results.route.totalDuration)}</div>
+                </div>
+                <div className="summary-item">
+                  <div className="summary-label">Waypoints</div>
+                  <div className="summary-value">{results.route.waypoints.length}</div>
+                </div>
+                <div className="summary-item">
+                  <div className="summary-label">Departure</div>
+                  <div className="summary-value">
+                    {new Date(formData.departureTime).toLocaleString('en-IN', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="alerts-list">
+              {results.weatherAlerts.map((alert, index) => (
+                <div 
+                  key={index} 
+                  className={`alert-item ${getSeverityClass(alert.severity)}`}
+                >
+                  <div className="alert-header">
+                    <div className="alert-location">{alert.location}</div>
+                    <div className="alert-time">{alert.arrivalTime}</div>
+                  </div>
+                  
+                  <div className="alert-message">{alert.alert}</div>
+                  
+                  {alert.weatherData && (
+                    <div className="weather-details">
+                      <div className="weather-item">
+                        <div className="weather-label">Temperature</div>
+                        <div className="weather-value">{alert.weatherData.temperature}°C</div>
+                      </div>
+                      <div className="weather-item">
+                        <div className="weather-label">Condition</div>
+                        <div className="weather-value">{alert.weatherData.description}</div>
+                      </div>
+                      <div className="weather-item">
+                        <div className="weather-label">Humidity</div>
+                        <div className="weather-value">{alert.weatherData.humidity}%</div>
+                      </div>
+                      <div className="weather-item">
+                        <div className="weather-label">Wind Speed</div>
+                        <div className="weather-value">{alert.weatherData.windSpeed} m/s</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
