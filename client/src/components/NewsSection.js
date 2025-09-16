@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './NewsSection.css';
 
 const NewsSection = () => {
@@ -49,13 +49,13 @@ const NewsSection = () => {
   });
 
   // Function to save news items to localStorage
-  const saveNewsToStorage = (news) => {
+  const saveNewsToStorage = useCallback((news) => {
     try {
       localStorage.setItem('garajbaras-news', JSON.stringify(news));
     } catch (error) {
       console.error('Error saving news to localStorage:', error);
     }
-  };
+  }, []);
 
   // Update news items and save to localStorage
   const updateNewsItems = (newItems) => {
@@ -69,7 +69,7 @@ const NewsSection = () => {
     if (!savedNews) {
       saveNewsToStorage(newsItems);
     }
-  }, []);
+  }, [newsItems, saveNewsToStorage]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
