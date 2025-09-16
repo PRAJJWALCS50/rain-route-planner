@@ -31,6 +31,9 @@
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
+  "engines": {
+    "node": "22.x"
+  },
   "keywords": ["weather", "route", "planning", "india", "rain"],
   "author": "Your Name",
   "license": "MIT"
