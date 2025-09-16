@@ -1,18 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 import MapView from './MapView';
+import Login from './components/Login';
+import WelcomePopup from './components/WelcomePopup';
+import NewsSection from './components/NewsSection';
 
 function App() {
+  const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     source: '',
     destination: '',
-    departureTime: new Date().toISOString().slice(0, 16)
+    departureTime: new Date().toISOString().slice(0, 16),
+    speed: 60,
+    spacing: 3
   });
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [results, setResults] = useState(null);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+
+  // Check for existing authentication on app load
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        // Show welcome popup for returning users too
+        setShowWelcomePopup(true);
+      } catch (error) {
+        // Clear invalid data
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+  }, []);
+
+  // Handle successful login
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    setShowWelcomePopup(true);
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    setResults(null);
+    setShowWelcomePopup(false);
+  };
+
+  // Handle welcome popup close
+  const handleWelcomePopupClose = () => {
+    setShowWelcomePopup(false);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -35,7 +81,10 @@ function App() {
     setResults(null);
 
     try {
-      const response = await axios.post('/api/check-route', formData);
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      const response = await axios.post('http://localhost:5000/api/check-route', formData, { headers });
       setResults(response.data);
     } catch (error) {
       console.error('Error:', error);
@@ -68,6 +117,8 @@ function App() {
     switch (severity) {
       case 'high':
         return 'rain';
+      case 'medium':
+        return 'cloudy';
       case 'low':
         return 'clear';
       default:
@@ -75,12 +126,50 @@ function App() {
     }
   };
 
+  // Show login page if user is not authenticated
+  if (!user) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
     <div className="App">
+      {showWelcomePopup && (
+        <WelcomePopup onClose={handleWelcomePopupClose} />
+      )}
       <div className="container">
         <header className="app-header">
-          <h1 className="app-title">🌧️ Rain Route Planner</h1>
-          <p className="app-subtitle">Plan your journey across India with real-time weather alerts</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <div>
+              <h1 className="app-title">🌧️ GarajBaras</h1>
+              <p className="app-subtitle">Plan your journey across India with real-time weather alerts</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <span style={{ color: 'white', fontSize: '0.9rem' }}>
+                Welcome, {user.name}
+              </span>
+              <button 
+                onClick={handleLogout}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  color: 'white',
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.background = 'rgba(255,255,255,0.3)';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'rgba(255,255,255,0.2)';
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
         </header>
 
         <form onSubmit={handleSubmit} className="form-container">
@@ -121,6 +210,35 @@ function App() {
                 value={formData.departureTime}
                 onChange={handleInputChange}
                 required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="speed">Speed (km/h)</label>
+              <input
+                type="number"
+                id="speed"
+                name="speed"
+                value={formData.speed}
+                onChange={handleInputChange}
+                min="10"
+                max="200"
+                placeholder="60"
+              />
+            </div>
+          </div>
+          
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="spacing">Waypoint Spacing (km)</label>
+              <input
+                type="number"
+                id="spacing"
+                name="spacing"
+                value={formData.spacing}
+                onChange={handleInputChange}
+                min="1"
+                max="50"
+                placeholder="3"
               />
             </div>
             <div className="form-group">
@@ -186,6 +304,14 @@ function App() {
                     })}
                   </div>
                 </div>
+                <div className="summary-item">
+                  <div className="summary-label">Speed</div>
+                  <div className="summary-value">{formData.speed} km/h</div>
+                </div>
+                <div className="summary-item">
+                  <div className="summary-label">Spacing</div>
+                  <div className="summary-value">{formData.spacing} km</div>
+                </div>
               </div>
             </div>
 
@@ -209,17 +335,25 @@ function App() {
                         <div className="weather-value">{alert.weatherData.temperature}°C</div>
                       </div>
                       <div className="weather-item">
-                        <div className="weather-label">Condition</div>
-                        <div className="weather-value">{alert.weatherData.description}</div>
+                        <div className="weather-label">Distance Traveled</div>
+                        <div className="weather-value">{((alert.weatherData.distanceFromStart || 0) / 1000).toFixed(2)} km</div>
                       </div>
                       <div className="weather-item">
                         <div className="weather-label">Humidity</div>
-                        <div className="weather-value">{alert.weatherData.humidity}%</div>
+                        <div className="weather-value">{parseFloat(alert.weatherData.humidity).toFixed(2)}%</div>
                       </div>
                       <div className="weather-item">
                         <div className="weather-label">Wind Speed</div>
-                        <div className="weather-value">{alert.weatherData.windSpeed} m/s</div>
+                        <div className="weather-value">{parseFloat(alert.weatherData.windSpeed).toFixed(2)} m/s</div>
                       </div>
+                      {alert.weatherData.isForecast && (
+                        <div className="weather-item">
+                          <div className="weather-label">Data Type</div>
+                          <div className="weather-value" style={{ color: '#059669', fontWeight: 'bold' }}>
+                            📅 Forecast Data
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -227,6 +361,9 @@ function App() {
             </div>
           </div>
         )}
+
+        {/* News Section - Always visible */}
+        <NewsSection />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
-# 🌧️ Rain Route Planner - India
+# 🌧️ GarajBaras - India
 
-A weather-aware route planning application that helps users plan their journeys across India by providing real-time weather alerts, especially rainfall conditions, along their route.
+GarajBaras is a weather-aware route planning application that helps users plan their journeys across India by providing real-time weather alerts, especially rainfall conditions, along their route.
 
 ## ✨ Features
 
@@ -37,7 +37,7 @@ A weather-aware route planning application that helps users plan their journeys 
 ### 1. Clone the Repository
 ```bash
 git clone <repository-url>
-cd rain-route-planner
+cd garajbaras
 ```
 
 ### 2. Install Backend Dependencies
