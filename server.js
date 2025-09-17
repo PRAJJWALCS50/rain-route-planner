@@ -11,7 +11,12 @@ console.log('MongoDB disabled - running in demo mode');
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    'https://garajbaras.vercel.app',
+    'https://garajbaras-git-main-prajjwalcs50.vercel.app',
+    'https://garajbaras-prajjwalcs50.vercel.app'
+  ],
   credentials: true
 }));
 
