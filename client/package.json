@@ -12,13 +12,12 @@
     "react-scripts": "5.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "vercel-build": "npm install && react-scripts build",
-    "gh-pages-build": "npx react-scripts build",
-    "prebuild": "chmod +x ./node_modules/.bin/react-scripts || exit 0"
+    "start": "node ./node_modules/react-scripts/bin/react-scripts.js start",
+    "build": "node ./node_modules/react-scripts/bin/react-scripts.js build",
+    "test": "node ./node_modules/react-scripts/bin/react-scripts.js test",
+    "eject": "node ./node_modules/react-scripts/bin/react-scripts.js eject",
+    "vercel-build": "npm install && node ./node_modules/react-scripts/bin/react-scripts.js build",
+    "gh-pages-build": "node ./node_modules/react-scripts/bin/react-scripts.js build"
   },
   "eslintConfig": {
     "extends": [
