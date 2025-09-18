@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 import MapView from './MapView';
-import Login from './components/Login';
 import WelcomePopup from './components/WelcomePopup';
 import NewsSection from './components/NewsSection';
 
 function App() {
-  const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     source: '',
     destination: '',
@@ -19,41 +17,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [results, setResults] = useState(null);
-  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
-
-  // Check for existing authentication on app load
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    
-    if (token && userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        // Show welcome popup for returning users too
-        setShowWelcomePopup(true);
-      } catch (error) {
-        // Clear invalid data
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-    }
-  }, []);
-
-  // Handle successful login
-  const handleLoginSuccess = (userData) => {
-    setUser(userData);
-    setShowWelcomePopup(true);
-  };
-
-  // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    setResults(null);
-    setShowWelcomePopup(false);
-  };
+  const [showWelcomePopup, setShowWelcomePopup] = useState(true);
 
   // Handle welcome popup close
   const handleWelcomePopupClose = () => {
@@ -81,10 +45,7 @@ function App() {
     setResults(null);
 
     try {
-      const token = localStorage.getItem('token');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      
-      const response = await axios.post('http://localhost:5000/api/check-route', formData, { headers });
+      const response = await axios.post('http://localhost:5000/api/check-route', formData);
       setResults(response.data);
     } catch (error) {
       console.error('Error:', error);
@@ -126,11 +87,6 @@ function App() {
     }
   };
 
-  // Show login page if user is not authenticated
-  if (!user) {
-    return <Login onLoginSuccess={handleLoginSuccess} />;
-  }
-
   return (
     <div className="App">
       {showWelcomePopup && (
@@ -142,32 +98,6 @@ function App() {
             <div>
               <h1 className="app-title">🌧️ GarajBaras</h1>
               <p className="app-subtitle">Plan your journey across India with real-time weather alerts</p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <span style={{ color: 'white', fontSize: '0.9rem' }}>
-                Welcome, {user.name}
-              </span>
-              <button 
-                onClick={handleLogout}
-                style={{
-                  background: 'rgba(255,255,255,0.2)',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  color: 'white',
-                  padding: '8px 16px',
-                  borderRadius: '20px',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.background = 'rgba(255,255,255,0.3)';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.background = 'rgba(255,255,255,0.2)';
-                }}
-              >
-                Logout
-              </button>
             </div>
           </div>
         </header>

@@ -34,8 +34,7 @@ app.use(express.json({
   }
 }));
 
-// Session configuration disabled for demo mode
-console.log('Session management disabled - running in demo mode');
+// No session management needed
 
 // OpenRouteService API configuration
 const OPENROUTE_API_KEY = process.env.OPENROUTE_API_KEY;
@@ -184,31 +183,10 @@ async function nameGeneratedWaypoints(waypoints) {
   }
 }
 
-// Import routes (conditional) - DISABLED FOR DEMO
-let authRoutes, optionalAuth;
-console.log('Authentication disabled - running in demo mode');
-
-// Mock auth routes for demo mode
-app.post('/api/auth/login', (req, res) => {
-  res.status(503).json({ error: 'Authentication system disabled in demo mode.' });
-});
-
-app.post('/api/auth/register', (req, res) => {
-  res.status(503).json({ error: 'Authentication system disabled in demo mode.' });
-});
-
-app.post('/api/auth/verify-otp', (req, res) => {
-  res.status(503).json({ error: 'Authentication system disabled in demo mode.' });
-});
-
-app.get('/api/auth/google', (req, res) => {
-  res.status(503).json({ error: 'Google OAuth disabled in demo mode.' });
-});
-
-console.log('Mock authentication routes loaded (demo mode)');
+// No authentication needed - direct access to all routes
 
 // Route to get route information and weather alerts
-app.post('/api/check-route', optionalAuth || ((req, res, next) => next()), async (req, res) => {
+app.post('/api/check-route', async (req, res) => {
   try {
     console.log('📥 Received request body:', JSON.stringify(req.body, null, 2));
     console.log('📥 Request headers:', req.headers);
