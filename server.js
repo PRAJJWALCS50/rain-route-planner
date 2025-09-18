@@ -20,19 +20,8 @@ app.use(cors({
   credentials: true
 }));
 
-// Enhanced JSON parsing with error handling
-app.use(express.json({
-  limit: '10mb',
-  verify: (req, res, buf) => {
-    try {
-      JSON.parse(buf);
-    } catch (e) {
-      console.error('❌ JSON parsing error:', e.message);
-      console.error('❌ Raw body:', buf.toString());
-      throw new Error('Invalid JSON');
-    }
-  }
-}));
+// JSON parsing middleware
+app.use(express.json({ limit: '10mb' }));
 
 // No session management needed
 
@@ -190,6 +179,8 @@ app.post('/api/check-route', async (req, res) => {
   try {
     console.log('📥 Received request body:', JSON.stringify(req.body, null, 2));
     console.log('📥 Request headers:', req.headers);
+    console.log('📥 Request method:', req.method);
+    console.log('📥 Request URL:', req.url);
     
     const { source, destination, departureTime, speed = 60, spacing = 3 } = req.body;
     
@@ -806,6 +797,12 @@ async function getWeatherData(lat, lng, etaTime = null) {
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'GarajBaras API is running' });
+});
+
+// Test POST endpoint
+app.post('/api/test', (req, res) => {
+  console.log('Test POST received:', req.body);
+  res.json({ message: 'Test POST successful', received: req.body });
 });
 
 // Start server
