@@ -17,7 +17,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "vercel-build": "npm install && react-scripts build",
-    "gh-pages-build": "npx react-scripts build"
+    "gh-pages-build": "npx react-scripts build",
+    "prebuild": "chmod +x ./node_modules/.bin/react-scripts || exit 0"
   },
   "eslintConfig": {
     "extends": [
