@@ -2,7 +2,7 @@
   "name": "garajbaras-client",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://prajjwalcs50.github.io/rain-route-planner",
+  
   "dependencies": {
     "axios": "^1.6.0",
     "date-fns": "^2.30.0",
