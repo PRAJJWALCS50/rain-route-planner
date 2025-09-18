@@ -7,9 +7,11 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "client": "cd client && npm start",
-    "build": "cd client && npm run build",
+    "build": "npm run install-client && cd client && npm run build",
     "install-client": "cd client && npm install",
-    "prebuild": "cd client && chmod +x ./node_modules/.bin/react-scripts || exit 0"
+    "prebuild": "cd client && chmod +x ./node_modules/.bin/react-scripts || exit 0",
+    "render-build": "npm install && npm run build",
+    "render-start": "npm start"
   },
   "dependencies": {
     "axios": "^1.6.0",
