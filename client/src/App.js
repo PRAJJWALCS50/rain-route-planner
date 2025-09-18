@@ -45,14 +45,38 @@ function App() {
     setResults(null);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/check-route', formData);
+      // Use proxy in development, direct URL in production
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? '/api/check-route' 
+        : '/api/check-route'; // Use proxy in development
+      
+      console.log('Making API call to:', apiUrl);
+      const response = await axios.post(apiUrl, formData, {
+        timeout: 30000, // 30 second timeout
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       setResults(response.data);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('API Error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
       if (error.response?.data?.error) {
         setError(error.response.data.error);
+      } else if (error.code === 'ECONNREFUSED') {
+        setError('Cannot connect to server. Please make sure the backend server is running on port 5000.');
+      } else if (error.code === 'NETWORK_ERROR' || error.message.includes('Network Error')) {
+        setError('Network error. Please check your internet connection and try again.');
+      } else if (error.message.includes('timeout')) {
+        setError('Request timed out. The server might be busy. Please try again.');
       } else {
-        setError('Failed to fetch route information. Please try again.');
+        setError(`Failed to fetch route information: ${error.message}`);
       }
     } finally {
       setLoading(false);
