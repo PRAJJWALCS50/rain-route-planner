@@ -15,7 +15,10 @@ app.use(cors({
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'https://garajbaras.vercel.app',
     'https://garajbaras-git-main-prajjwalcs50.vercel.app',
-    'https://garajbaras-prajjwalcs50.vercel.app'
+    'https://garajbaras-prajjwalcs50.vercel.app',
+    // Add Render URLs
+    process.env.RENDER_EXTERNAL_URL,
+    'https://rain-route-planner-2.onrender.com' // Your actual Render URL
   ],
   credentials: true
 }));

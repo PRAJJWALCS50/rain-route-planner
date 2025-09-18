@@ -45,9 +45,9 @@ function App() {
     setResults(null);
 
     try {
-      // Use proxy in development, direct URL in production
+      // Use different API URLs based on environment
       const apiUrl = process.env.NODE_ENV === 'production' 
-        ? '/api/check-route' 
+        ? (process.env.REACT_APP_API_URL || '/api/check-route')
         : '/api/check-route'; // Use proxy in development
       
       console.log('Making API call to:', apiUrl);
