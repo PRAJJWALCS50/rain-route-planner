@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "client": "cd client && npm start",
     "build": "cd client && npm run build",
-    "install-client": "cd client && npm install"
+    "install-client": "cd client && npm install",
+    "prebuild": "cd client && chmod +x ./node_modules/.bin/react-scripts || exit 0"
   },
   "dependencies": {
     "axios": "^1.6.0",
