@@ -2,22 +2,20 @@
   "name": "garajbaras-client",
   "version": "1.0.0",
   "private": true,
-  
   "dependencies": {
     "axios": "^1.6.0",
     "date-fns": "^2.30.0",
     "leaflet": "^1.9.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "serve": "^14.2.1"
   },
   "scripts": {
-    "start": "node ./node_modules/react-scripts/bin/react-scripts.js start",
-    "build": "node ./node_modules/react-scripts/bin/react-scripts.js build",
-    "test": "node ./node_modules/react-scripts/bin/react-scripts.js test",
-    "eject": "node ./node_modules/react-scripts/bin/react-scripts.js eject",
-    "vercel-build": "npm install && node ./node_modules/react-scripts/bin/react-scripts.js build",
-    "gh-pages-build": "node ./node_modules/react-scripts/bin/react-scripts.js build"
+    "start": "serve -s build -l 3000",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -38,11 +36,7 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:5000",
   "engines": {
     "node": "22.x"
-  },
-  "devDependencies": {
-    "parcel": "^2.15.4"
   }
 }
